@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">CS2115HW3</string>
+    <string name="btn_txt_start_game">Start Game</string>
+    <string name="txt_game_rules">1. You can pick from same color with unlimited ball\n\n2. You can pick from different color, but limited to 1 ball per color.\n\n3. Pick the last ball to WIN</string>
+    <string name="txt_color_hint">Number of Color(2 – 5)</string>
+    <string name="default_color_num">3</string>
+    <string name="current_player">Current Player: %1$d</string>
 </resources>
