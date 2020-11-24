@@ -181,9 +181,10 @@ public class Playground extends AppCompatActivity implements View.OnClickListene
     private boolean checkCurrentPosition(){
         for(int i = 0; i<StablePNumber.size(); i++){
             if (Arrays.equals(ballNum, StablePNumber.get(i))){
-                Log.e("CheckLog", ""+StablePNumber.get(i)[0] + StablePNumber.get(i)[1] +StablePNumber.get(i)[2] );
                 return true;
             }
+            //Log.e("StablePNumber", ""+StablePNumber.get(i)[0] + StablePNumber.get(i)[1] +StablePNumber.get(i)[2] +StablePNumber.get(i)[3] +StablePNumber.get(i)[4] );
+            //Log.e("ballNum", ""+ballNum[0] + ballNum[1] +ballNum[2] +ballNum[3] +ballNum[4] );
         }
         return false;
     }
@@ -193,6 +194,7 @@ public class Playground extends AppCompatActivity implements View.OnClickListene
             return null;
         }
         int[] tmpNumber = ballNum.clone();
+        Log.e("ballNum", ""+ballNum[0] + ballNum[1] +ballNum[2] +ballNum[3] +ballNum[4] );
         //Multi Rules first
         for (int i = 0; i < 5; i++){
             if(tmpNumber[i] != 0){
@@ -207,8 +209,8 @@ public class Playground extends AppCompatActivity implements View.OnClickListene
                         return tmpNumber;
                     }
                 }
-                tmpNumber = ballNum.clone();
             }
+            tmpNumber = ballNum.clone();
         }
         //Single Rules
         for(int i = 0; i< 5; i++){
@@ -394,7 +396,7 @@ public class Playground extends AppCompatActivity implements View.OnClickListene
                 moveCount++;
                 currentMove[currentColor]++;
                 ballNum[currentColor]--;
-
+                Log.e("ballNum", ""+ballNum[0] + ballNum[1] +ballNum[2] +ballNum[3] +ballNum[4] );
                 if (moveCount > 1) {
                     if (lastColor == currentColor) {
                         for (int i = 0; i < colorNum; i++) {
