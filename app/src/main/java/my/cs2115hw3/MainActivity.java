@@ -17,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
     private Button startBtn;
     private TextInputLayout inputHints;
     private TextInputEditText inputText;
-    private ToggleButton computerTB, demoTB;
+    private ToggleButton demoTB;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,7 +26,6 @@ public class MainActivity extends AppCompatActivity {
         startBtn = findViewById(R.id.startbtn);
         inputText = findViewById(R.id.inputText);
         inputHints = findViewById(R.id.inputHints);
-        computerTB = findViewById(R.id.computerTB);
         demoTB = findViewById(R.id.demoTB);
 
 
@@ -35,7 +34,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                boolean isComputer = computerTB.isChecked();
                 boolean isDemo = demoTB.isChecked();
                 int input = 0;
                 if (!inputText.getText().toString().equals("")){
@@ -46,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
                     intent = new Intent(getApplicationContext(), Playground.class);
 
                     intent.putExtra("colorNum", input);
-                    intent.putExtra("isComputer", isComputer);
                     intent.putExtra("isDemo", isDemo);
                     startActivity(intent);
                 }else{

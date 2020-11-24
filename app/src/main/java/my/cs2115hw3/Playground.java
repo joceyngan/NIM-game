@@ -60,7 +60,6 @@ public class Playground extends AppCompatActivity implements View.OnClickListene
 
     private final Handler mUI_Handler = new Handler();
 
-    private boolean isComputer;
     private boolean isDemo;
 
     @Override
@@ -70,7 +69,6 @@ public class Playground extends AppCompatActivity implements View.OnClickListene
         Intent intent = getIntent();
         colorNum = intent.getIntExtra("colorNum", 2);
         isDemo = intent.getBooleanExtra("isDemo", false);
-        isComputer = intent.getBooleanExtra("isComputer", false);
         init();
 
 
@@ -157,13 +155,11 @@ public class Playground extends AppCompatActivity implements View.OnClickListene
             recyclerView.setAdapter(myAdapter);
             int[] find = findNextPosition();
             if(find == null){
-                position_tv.setText("Here is P position");
+                position_tv.setText("This is P position");
             }else{
-                position_tv.setText("Here is N position\nNext P Position is: [" + find[0] + "] [" + find[1] + "] [" + find[2] + "] [" + find[3] + "] [" + find[4] + "]");
+                position_tv.setText("This is N position\nNext P Position is: [" + find[0] + "] [" + find[1] + "] [" + find[2] + "] [" + find[3] + "] [" + find[4] + "]");
                 //position_tv.setText("Here is N position");
             }
-            Log.e("Log", find[0] + "");
-
         }
     };
 
@@ -438,9 +434,9 @@ public class Playground extends AppCompatActivity implements View.OnClickListene
                 drawGame();
                 int[] find = findNextPosition();
                 if(find == null){
-                    position_tv.setText("Here is P position");
+                    position_tv.setText("This is P position");
                 }else{
-                    position_tv.setText("Here is N position\nNext P Position is: [" + find[0] + "] [" + find[1] + "] [" + find[2] + "] [" + find[3] + "] [" + find[4] + "]");
+                    position_tv.setText("This is N position\nNext P Position is: [" + find[0] + "] [" + find[1] + "] [" + find[2] + "] [" + find[3] + "] [" + find[4] + "]");
                     //position_tv.setText("Here is N position");
                 }
             }
