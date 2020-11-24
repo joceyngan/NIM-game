@@ -181,6 +181,7 @@ public class Playground extends AppCompatActivity implements View.OnClickListene
     private boolean checkCurrentPosition(){
         for(int i = 0; i<StablePNumber.size(); i++){
             if (Arrays.equals(ballNum, StablePNumber.get(i))){
+                Log.e("CheckLog", ""+StablePNumber.get(i)[0] + StablePNumber.get(i)[1] +StablePNumber.get(i)[2] );
                 return true;
             }
         }
@@ -410,11 +411,10 @@ public class Playground extends AppCompatActivity implements View.OnClickListene
                     }
                 }
                 lastColor = currentColor;
-
                 drawGame();
             }
             for (int i = 0; i < colorNum; i++) {
-                if (ballNum[currentColor] <= 0) {
+                if (ballNum[i] <= 0) {
                     buttonList.get(i).setVisibility(View.INVISIBLE);
                 }
             }
