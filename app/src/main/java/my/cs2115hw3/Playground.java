@@ -1,6 +1,7 @@
 package my.cs2115hw3;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.UiThread;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -26,8 +27,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,9 +41,9 @@ public class Playground extends AppCompatActivity implements View.OnClickListene
     private Canvas canvas;
     private Bitmap bitmap;
     private ImageView imageView;
-    private TextView player_tv;
+    private TextView player_tv, position_tv;
 
-    private final int[] colors = {Color.BLUE, Color.RED, Color.YELLOW, Color.GREEN, Color.BLACK};
+    private final int[] colors = {Color.BLUE, Color.RED, 0xFFCCCC00, Color.GREEN, Color.BLACK};
     private int[] ballNum;
     private int colorNum = 1;
     private int[] currentMove;
@@ -55,12 +58,10 @@ public class Playground extends AppCompatActivity implements View.OnClickListene
     private ArrayList<Integer> StablePList = new ArrayList<>();
     private ArrayList<int[]> StablePNumber = new ArrayList<>();
 
-    private Handler mUI_Handler = new Handler();
-    private Handler mThreadHandler;
-    private HandlerThread mThread;
+    private final Handler mUI_Handler = new Handler();
 
-    private MyAdapter myAdapter;
-    private RecyclerView recyclerView;
+    private boolean isComputer;
+    private boolean isDemo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,25 +69,74 @@ public class Playground extends AppCompatActivity implements View.OnClickListene
         setContentView(R.layout.activity_playground);
         Intent intent = getIntent();
         colorNum = intent.getIntExtra("colorNum", 2);
+        isDemo = intent.getBooleanExtra("isDemo", false);
+        isComputer = intent.getBooleanExtra("isComputer", false);
         init();
 
 
-        mThread = new HandlerThread("Worker");
+        HandlerThread mThread = new HandlerThread("Worker");
         mThread.start();
-        mThreadHandler=new Handler(mThread.getLooper());
+        Handler mThreadHandler = new Handler(mThread.getLooper());
         mThreadHandler.post(getP);
+    }
+
+    private void init() {
+        imageView = findViewById(R.id.imageView);
+        bitmap = Bitmap.createBitmap(500, 300, Bitmap.Config.ARGB_8888);
+        canvas = new Canvas(bitmap);
+        positions = new int[100000][6];
+        player_tv = findViewById(R.id.player_tv);
+        position_tv = findViewById(R.id.positionTV);
+
+        buttonList.add(findViewById(R.id.blue_btn));
+        buttonList.add(findViewById(R.id.red_btn));
+        buttonList.add(findViewById(R.id.yellow_btn));
+        buttonList.add(findViewById(R.id.green_btn));
+        buttonList.add(findViewById(R.id.black_btn));
+        findViewById(R.id.next_btn).setOnClickListener(this);
+        ballNum = new int[5];
+        currentMove = new int[colorNum];
+        if(!isDemo){
+            Random random = new Random();
+            for (int i = 0; i < 5; i++) {
+                buttonList.get(i).setOnClickListener(this);
+                if (i < colorNum) {
+                    ballNum[i] = random.nextInt(6) + 3;
+                } else {
+                    buttonList.get(i).setVisibility(View.INVISIBLE);
+                }
+            }
+        }else{ //fixed number for Demo
+            for (int i = 0; i < 5; i++) {
+                buttonList.get(i).setOnClickListener(this);
+                colorNum = 3;
+                ballNum[0] = 5;
+                ballNum[1] = 3;
+                ballNum[2] = 4;
+                if (i >= colorNum) {
+                    buttonList.get(i).setVisibility(View.INVISIBLE);
+                }
+            }
+        }
+        drawGame();
     }
 
     private final Runnable getP = new Runnable() {
         @Override
         public void run() {
-            getPosition();
+            //getPosition(); Change to read from asset;
+            try {
+                getPositionFromAsset();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     };
 
     private final Runnable updateList = new Runnable() {
         @Override
         public void run() {
+            /*
             for (int i = 0; i < 10000; i++){
                 if (positions[i][5] == 0){
                     if(!StablePList.contains(i)){
@@ -95,12 +145,86 @@ public class Playground extends AppCompatActivity implements View.OnClickListene
                     }
                 }
             }
-            recyclerView = findViewById(R.id.recycView);
+            RecyclerView recyclerView = findViewById(R.id.recycView);
             recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
-            myAdapter = new MyAdapter(StablePList, positions);
+            MyAdapter myAdapter = new MyAdapter(StablePList, positions);
             recyclerView.setAdapter(myAdapter);
+            */
+
+            RecyclerView recyclerView = findViewById(R.id.recycView);
+            recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+            MyAdapter myAdapter = new MyAdapter(StablePNumber);
+            recyclerView.setAdapter(myAdapter);
+            int[] find = findNextPosition();
+            if(find == null){
+                position_tv.setText("Here is P position");
+            }else{
+                position_tv.setText("Here is N position\nNext P Position is: [" + find[0] + "] [" + find[1] + "] [" + find[2] + "] [" + find[3] + "] [" + find[4] + "]");
+                //position_tv.setText("Here is N position");
+            }
+            Log.e("Log", find[0] + "");
+
         }
     };
+
+    private void getPositionFromAsset() throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(getAssets().open("final.txt")));
+        String line;
+        while ((line = reader.readLine()) != null){
+            String[] tmp = line.split(",");
+            int[] tmpNum = {Integer.parseInt(tmp[0]), Integer.parseInt(tmp[1]), Integer.parseInt(tmp[2]), Integer.parseInt(tmp[3]), Integer.parseInt(tmp[4])};
+            StablePNumber.add(tmpNum);
+        }
+        mUI_Handler.post(updateList);
+    }
+
+    private boolean checkCurrentPosition(){
+        for(int i = 0; i<StablePNumber.size(); i++){
+            if (Arrays.equals(ballNum, StablePNumber.get(i))){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int[] findNextPosition(){
+        if (checkCurrentPosition()){
+            return null;
+        }
+        int[] tmpNumber = ballNum.clone();
+        //Multi Rules first
+        for (int i = 0; i < 5; i++){
+            if(tmpNumber[i] != 0){
+                tmpNumber[i] = tmpNumber[i] - 1;
+            }
+            for(int j = 0; j < 5; j++){
+                if (i != j && tmpNumber[j] != 0){
+                    tmpNumber[j] = tmpNumber[j] - 1;
+                }
+                for(int k = 0; k < StablePNumber.size(); k++){
+                    if (Arrays.equals(tmpNumber, StablePNumber.get(k))){
+                        return tmpNumber;
+                    }
+                }
+                tmpNumber = ballNum.clone();
+            }
+        }
+        //Single Rules
+        for(int i = 0; i< 5; i++){
+            for(int j = 1; j <= tmpNumber[i]; j++){
+                if(tmpNumber[i] != 0){
+                    tmpNumber[i] = tmpNumber[i] - j;
+                }
+                for(int k = 0; k < StablePNumber.size(); k++){
+                    if (Arrays.equals(tmpNumber, StablePNumber.get(k))){
+                        return tmpNumber;
+                    }
+                }
+                tmpNumber = ballNum.clone();
+            }
+        }
+        return null;
+    }
 
     private void getPosition() {
         int a = 0, b = 0, c = 0, d = 0, e = 0;
@@ -173,7 +297,6 @@ public class Playground extends AppCompatActivity implements View.OnClickListene
         }
     }
 
-
     private boolean singleColor(int[] position, int p) {
         int[] tmpPosition = position.clone();
         boolean find = false;
@@ -221,37 +344,6 @@ public class Playground extends AppCompatActivity implements View.OnClickListene
             if (find) break;
         }
         return find;
-    }
-
-
-    private void init() {
-        imageView = findViewById(R.id.imageView);
-        bitmap = Bitmap.createBitmap(500, 300, Bitmap.Config.ARGB_8888);
-        canvas = new Canvas(bitmap);
-        positions = new int[100000][6];
-        player_tv = findViewById(R.id.player_tv);
-
-
-
-        buttonList.add(findViewById(R.id.blue_btn));
-        buttonList.add(findViewById(R.id.red_btn));
-        buttonList.add(findViewById(R.id.yellow_btn));
-        buttonList.add(findViewById(R.id.green_btn));
-        buttonList.add(findViewById(R.id.black_btn));
-        findViewById(R.id.next_btn).setOnClickListener(this);
-        ballNum = new int[5];
-        currentMove = new int[colorNum];
-        Random random = new Random();
-        for (int i = 0; i < 5; i++) {
-            buttonList.get(i).setOnClickListener(this);
-            if (i < colorNum) {
-                ballNum[i] = random.nextInt(6) + 3;
-            } else {
-                buttonList.get(i).setVisibility(View.INVISIBLE);
-            }
-        }
-
-        drawGame();
     }
 
     private void drawGame() {
@@ -342,6 +434,13 @@ public class Playground extends AppCompatActivity implements View.OnClickListene
                 lastColor = -1;
                 currentColor = -2;
                 drawGame();
+                int[] find = findNextPosition();
+                if(find == null){
+                    position_tv.setText("Here is P position");
+                }else{
+                    position_tv.setText("Here is N position\nNext P Position is: [" + find[0] + "] [" + find[1] + "] [" + find[2] + "] [" + find[3] + "] [" + find[4] + "]");
+                    //position_tv.setText("Here is N position");
+                }
             }
         }
 
@@ -373,19 +472,15 @@ public class Playground extends AppCompatActivity implements View.OnClickListene
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-    }
 }
 
 class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder>{
-    private ArrayList<Integer> pposition;
-    private int[][] positions;
 
-    MyAdapter(ArrayList<Integer> pposition, int[][] positions) {
-        this.pposition = pposition;
-        this.positions = positions;
+    private ArrayList<int[]> stablePNumber;
+
+
+    public MyAdapter(ArrayList<int[]> stablePNumber) {
+        this.stablePNumber = stablePNumber;
     }
 
     @NonNull
@@ -396,16 +491,25 @@ class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder>{
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        /*
         holder.textView.setText(positions[pposition.get(position)][0]+ " ," +
                                 positions[pposition.get(position)][1]+ " ," +
                                 positions[pposition.get(position)][2]+ " ," +
                                 positions[pposition.get(position)][3]+ " ," +
                                 positions[pposition.get(position)][4]);
+        */
+        String tmpString = "[" + stablePNumber.get(position)[0] +
+                "] , [" + stablePNumber.get(position)[1]+
+                "] , [" + stablePNumber.get(position)[2]+
+                "] , [" + stablePNumber.get(position)[3]+
+                "] , [" + stablePNumber.get(position)[4]+"]";
+
+        holder.textView.setText(tmpString);
     }
 
     @Override
     public int getItemCount() {
-        return pposition.size();
+        return stablePNumber.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

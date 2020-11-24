@@ -4,10 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginStart="8dp"
-    android:layout_marginLeft="8dp"
-    android:layout_marginEnd="8dp"
-    android:layout_marginRight="8dp"
     tools:context=".Playground">
 
     <Button
@@ -30,7 +26,7 @@
         android:layout_height="300dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/positionTV"
         tools:srcCompat="@tools:sample/avatars" />
 
     <LinearLayout
@@ -78,7 +74,7 @@
             android:background="#FFFFFF"
             android:text="Yellow"
             android:textColor="#000000"
-            app:backgroundTint="#FFEB3B" />
+            app:backgroundTint="#CCCC00" />
     </LinearLayout>
 
     <LinearLayout
@@ -100,8 +96,9 @@
             android:layout_marginRight="8dp"
             android:layout_weight="1"
             android:text="Green"
-            app:backgroundTint="#8BC34A"
-            app:iconTint="#FFFFFF" />
+            android:textColor="#000000"
+            app:backgroundTint="#A4FF3A"
+            app:iconTint="#000000" />
 
         <Button
             android:id="@+id/black_btn"
@@ -156,5 +153,20 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/player_tv" />
+
+    <TextView
+        android:id="@+id/positionTV"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:text="N Position"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
