@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -16,6 +17,7 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +26,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -129,6 +134,7 @@ public class Playground extends AppCompatActivity implements View.OnClickListene
         for(int i =1; i< positions.length; i++){
             if(i % 5000 == 0){
                 mUI_Handler.post(updateList);
+                //writeToFile(getApplicationContext(),"tmp_"+i+".txt");  // No write out cheat sheet
             }
             int index;
             for (index = i - 1; index >= 0; index--){
@@ -145,7 +151,26 @@ public class Playground extends AppCompatActivity implements View.OnClickListene
                 positions[i][5] = 1;
             }
         }
+        System.out.println("Done");
+        writeToFile(getApplicationContext(), "final.txt");
 
+    }
+
+    private void writeToFile(Context context, String name) {
+        try {
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput(name, Context.MODE_PRIVATE));
+            for (int i = 0; i < PList.size(); i++){
+                outputStreamWriter.write(positions[PList.get(i)][0] + "," +
+                                positions[PList.get(i)][1] + "," +
+                                positions[PList.get(i)][2] + "," +
+                                positions[PList.get(i)][3] + "," +
+                                positions[PList.get(i)][4] + "\n");
+            }
+            outputStreamWriter.close();
+        }
+        catch (IOException e) {
+            Log.e("PLAYGROUND", e.getMessage());
+        }
     }
 
 
@@ -259,7 +284,6 @@ public class Playground extends AppCompatActivity implements View.OnClickListene
         if (v.getId() == R.id.blue_btn) {
             currentColor = 0;
         }
-        System.out.println(positions[1]);
         if (v.getId() == R.id.red_btn) {
             currentColor = 1;
         }
@@ -329,6 +353,7 @@ public class Playground extends AppCompatActivity implements View.OnClickListene
         for (int i = 0; i < colorNum; i++) {
             if (ballNum[i] > 0) {
                 win = false;
+                break;
             }
         }
         if (win) {
